@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	kaicommon "github.com/kai-scheduler/KAI-scheduler/pkg/apis/kai/v1/common"
+	kaicommon "github.com/kai-scheduler/api/kai/v1/common"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -84,9 +84,15 @@ type ProjectRoleBinding struct {
 	// +optional
 	ClusterRoleName string `json:"clusterRoleName,omitempty"`
 
-	// ServiceAccountName is the subject, taken from the installation namespace.
+	// ServiceAccountName is the subject. It is taken from the installation namespace
+	// unless BindProjectServiceAccount says otherwise.
 	// +kubebuilder:validation:MinLength=1
 	ServiceAccountName string `json:"serviceAccountName"`
+
+	// BindProjectServiceAccount binds the service account of the project's own
+	// namespace instead of the installation namespace.
+	// +optional
+	BindProjectServiceAccount *bool `json:"bindProjectServiceAccount,omitempty"`
 }
 
 // ProjectControllerService describes the project-controller's published ports.

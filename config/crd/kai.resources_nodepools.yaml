@@ -95,8 +95,9 @@ spec:
                       Keys match the scheduler's flag names exactly.
                     type: object
                   minRuntime:
-                    description: MinRuntime specifies the minimum guaranteed runtime
-                      before a job can be preempted or reclaimed.
+                    description: |-
+                      MinRuntime specifies the minimum guaranteed runtime before a job can be preempted or reclaimed.
+                      Each value is a duration such as "5m", "1h30m" or "2d"; d is 24h and w is 7d.
                     properties:
                       preemptMinRuntime:
                         description: PreemptMinRuntime specifies the minimum runtime
@@ -107,6 +108,11 @@ spec:
                           of a job in queue before it can be reclaimed
                         type: string
                     type: object
+                    x-kubernetes-validations:
+                    - message: preemptMinRuntime must be a duration such as 5m
+                      rule: '!has(self.preemptMinRuntime) || self.preemptMinRuntime.matches(''^(0|([0-9]+([.][0-9]+)?(ns|us|ms|s|m|h|d|w))+)$'')'
+                    - message: reclaimMinRuntime must be a duration such as 10m
+                      rule: '!has(self.reclaimMinRuntime) || self.reclaimMinRuntime.matches(''^(0|([0-9]+([.][0-9]+)?(ns|us|ms|s|m|h|d|w))+)$'')'
                   placementStrategy:
                     description: PlacementStrategy is the GPU/CPU bin-pack or spread
                       strategy for this shard.
@@ -154,11 +160,22 @@ spec:
                       TimeBasedFairShare configures usage-aware fairness for the nodepool.
                       The controller compiles this into the shard's kValue + usageDBConfig.
                     properties:
+                      connectionString:
+                        description: ConnectionString is the usage db address. Maps
+                          to shard usageDBConfig.connectionString.
+                        type: string
                       enabled:
                         description: |-
                           Enabled activates usage-aware fairness. When false, scheduling uses current
                           queue state only.
                         type: boolean
+                      extraParams:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          ExtraParams are extra parameters for the usage db client, which are client specific.
+                          Maps to shard usageDBConfig.usageParams.extraParams.
+                        type: object
                       halfLifePeriod:
                         description: |-
                           HalfLifePeriod is the half-life of past usage. 0 = no decay (all history weighted equally).

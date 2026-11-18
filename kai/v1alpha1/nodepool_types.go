@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	kaiv1 "github.com/kai-scheduler/KAI-scheduler/pkg/apis/kai/v1"
+	kaiv1 "github.com/kai-scheduler/api/kai/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -81,7 +81,10 @@ type SchedulingShardConfig struct {
 	QueueDepthPerAction map[string]int `json:"queueDepthPerAction,omitempty"`
 
 	// MinRuntime specifies the minimum guaranteed runtime before a job can be preempted or reclaimed.
+	// Each value is a duration such as "5m", "1h30m" or "2d"; d is 24h and w is 7d.
 	// +optional
+	// +kubebuilder:validation:XValidation:rule="!has(self.preemptMinRuntime) || self.preemptMinRuntime.matches('^(0|([0-9]+([.][0-9]+)?(ns|us|ms|s|m|h|d|w))+)$')",message="preemptMinRuntime must be a duration such as 5m"
+	// +kubebuilder:validation:XValidation:rule="!has(self.reclaimMinRuntime) || self.reclaimMinRuntime.matches('^(0|([0-9]+([.][0-9]+)?(ns|us|ms|s|m|h|d|w))+)$')",message="reclaimMinRuntime must be a duration such as 10m"
 	MinRuntime *kaiv1.MinRuntime `json:"minRuntime,omitempty"`
 
 	// Plugins allows overriding plugin configuration. Keys are plugin names.
@@ -127,6 +130,15 @@ type TimeBasedFairShare struct {
 	// most users leave this unset.
 	// +optional
 	Sampling *FairShareSampling `json:"sampling,omitempty"`
+
+	// ConnectionString is the usage db address. Maps to shard usageDBConfig.connectionString.
+	// +optional
+	ConnectionString *string `json:"connectionString,omitempty"`
+
+	// ExtraParams are extra parameters for the usage db client, which are client specific.
+	// Maps to shard usageDBConfig.usageParams.extraParams.
+	// +optional
+	ExtraParams map[string]string `json:"extraParams,omitempty"`
 }
 
 // FairShareWindow defines the time window used for usage aggregation.

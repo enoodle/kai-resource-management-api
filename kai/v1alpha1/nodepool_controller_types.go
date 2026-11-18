@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	kaicommon "github.com/kai-scheduler/KAI-scheduler/pkg/apis/kai/v1/common"
+	kaicommon "github.com/kai-scheduler/api/kai/v1/common"
 )
 
 // NodePoolController configures the nodepool-controller service.
@@ -98,6 +98,12 @@ type NodePoolControllerArgs struct {
 	// DcgmExporterNamespace is the namespace of the DCGM exporter Service.
 	// +optional
 	DcgmExporterNamespace *string `json:"dcgmExporterNamespace,omitempty"`
+
+	// SchedulerNamespace is the namespace of the KAI Scheduler, where per-shard
+	// ServiceMonitors are written. Empty means spec.namespace. It must match where
+	// the scheduler actually runs; nothing checks it.
+	// +optional
+	SchedulerNamespace *string `json:"schedulerNamespace,omitempty"`
 
 	// SchedulingShardArgs is a JSON-encoded map of cluster-wide KAI scheduler args
 	// merged into every SchedulingShard the controller writes. Empty means no

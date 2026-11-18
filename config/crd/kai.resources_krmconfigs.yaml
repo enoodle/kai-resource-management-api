@@ -978,6 +978,16 @@ spec:
                             x-kubernetes-list-type: atomic
                         type: object
                     type: object
+                  allowExternalQueues:
+                    description: |-
+                      AllowExternalQueues declares that the cluster holds Queues KRM did not create, such as
+                      a hierarchy built before KRM was installed. project-controller then updates or deletes
+                      only a Queue whose owner reference names the Project or Department being reconciled,
+                      and a Project or Department whose queue name such a Queue holds gets a suffixed name
+                      instead. pod-group-assigner leaves alone a PodGroup that does not resolve to a KRM
+                      project and queue, so workloads outside KRM keep their queue. Unset, every Queue is
+                      taken to be KRM's, and one without an owner is adopted.
+                    type: boolean
                   defaultNodePoolName:
                     description: DefaultNodePoolName is the node pool a workload falls
                       back to.
@@ -1499,6 +1509,12 @@ spec:
                           MetricsNamespace prefixes every Prometheus metric the controller emits or
                           queries, including the queue-allocation metric names written into each
                           SchedulingShard.
+                        type: string
+                      schedulerNamespace:
+                        description: |-
+                          SchedulerNamespace is the namespace of the KAI Scheduler, where per-shard
+                          ServiceMonitors are written. Empty means spec.namespace. It must match where
+                          the scheduler actually runs; nothing checks it.
                         type: string
                       schedulingShardArgs:
                         description: |-
@@ -4204,6 +4220,11 @@ spec:
                         ProjectRoleBinding is a RoleBinding the project-controller replicates into every
                         namespace it creates for a project.
                       properties:
+                        bindProjectServiceAccount:
+                          description: |-
+                            BindProjectServiceAccount binds the service account of the project's own
+                            namespace instead of the installation namespace.
+                          type: boolean
                         clusterRoleName:
                           description: |-
                             ClusterRoleName is the ClusterRole to bind, which must already exist.
@@ -4215,8 +4236,9 @@ spec:
                           minLength: 1
                           type: string
                         serviceAccountName:
-                          description: ServiceAccountName is the subject, taken from
-                            the installation namespace.
+                          description: |-
+                            ServiceAccountName is the subject. It is taken from the installation namespace
+                            unless BindProjectServiceAccount says otherwise.
                           minLength: 1
                           type: string
                       required:
